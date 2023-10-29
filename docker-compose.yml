@@ -1,0 +1,42 @@
+version: '3'
+services:
+  rest-api:
+    build: .
+    ports:
+      - 3000:3000
+    hostname: api-kino-rest-service
+    env_file: .env
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - api-mysql-redis
+  mysql:
+    image: mysql:latest
+    ports:
+      - 5433:5432
+    hostname: db-kino-rest-service
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DB}
+    volumes:
+      - ./mysql:/var/lib/mysql/data
+    networks:
+      - api-mysql-redis
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6380:6379
+    hostname: cache-kino-rest-service
+    volumes:
+      - ./redis:/data
+    networks:
+      - api-mysql-redis
+networks:
+  api-mysql-redis:
+    driver: bridge
