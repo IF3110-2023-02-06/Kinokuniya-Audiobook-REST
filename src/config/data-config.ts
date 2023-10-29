@@ -1,8 +1,8 @@
 import { DataSourceOptions } from "typeorm";
 
-// import { User } from "../models/user-model";
-// import { Book } from "../models/book-model";
-// import { UserSubscriber } from "../subscribers/user-subscriber";
+import { User } from "../models/user-model";
+import { Book } from "../models/book-model";
+import { UserSubscriber } from "../subscribers/user-subscriber";
 
 const generateMySQLHost = () => {
     return process.env.MYSQL_HOST ? process.env.MYSQL_HOST : "localhost";
@@ -52,7 +52,7 @@ export const dataConfig: DataSourceOptions = {
     },
     synchronize: true,
     logging: true,
-    // entities: [User, Book],
-    // subscribers: [UserSubscriber],
-    // migrations: [],
+    entities: [User, Book],
+    subscribers: [UserSubscriber],
+    migrations: [],
 };
