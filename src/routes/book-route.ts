@@ -53,10 +53,10 @@ export class BookRoute {
                 this.bookController.delete()
             )
             .get(
-                "/app/book/:author_id", 
+                "/app/book/:authorID", 
                 this.bookController.indexArtist())
             .get(
-                "/app/book/listen/:book_id", 
+                "/app/book/listen/:bookID", 
                 this.bookController.fetchBook());
     }
 }
