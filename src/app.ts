@@ -6,18 +6,18 @@ import "reflect-metadata";
 
 import { serverConfig } from "./config/server-config";
 import { dataConfig } from "./config/data-config";
-// import { UserRoute } from "./routes/user-route";
-// import { BookRoute } from "./routes/book-route";
-// import { SoapRoute } from "./routes/soap-route";
+import { UserRoute } from "./routes/user-route";
+import { BookRoute } from "./routes/book-route";
+import { SoapRoute } from "./routes/soap-route";
 
 export class App {
     dataSource: DataSource;
     server: Express;
 
     constructor() {
-        // const userRoute = new UserRoute();
-        // const bookRoute = new BookRoute();
-        // const soapRoute = new SoapRoute();
+        const userRoute = new UserRoute();
+        const bookRoute = new BookRoute();
+        const soapRoute = new SoapRoute();
 
         this.dataSource = new DataSource(dataConfig);
 
@@ -28,9 +28,9 @@ export class App {
             express.json(),
             express.urlencoded({ extended: true }),
             morgan("combined"),
-            // userRoute.getRoute(),
-            // bookRoute.getRoute(),
-            // soapRoute.getRoute()
+            userRoute.getRoute(),
+            bookRoute.getRoute(),
+            soapRoute.getRoute()
         );
     }
 
