@@ -134,7 +134,7 @@ export class UserController {
             const users = await User.createQueryBuilder("user")
                 .select(["user.userID", "user.name"])
                 .cache(
-                    `penyanyi`,
+                    `author`,
                     cacheConfig.cacheExpirationTime
                 )
                 .getMany()

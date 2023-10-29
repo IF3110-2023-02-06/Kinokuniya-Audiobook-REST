@@ -54,7 +54,7 @@ export class BookRoute {
             )
             .get(
                 "/app/book/:authorID", 
-                this.bookController.indexArtist())
+                this.bookController.indexAuthor())
             .get(
                 "/app/book/listen/:bookID", 
                 this.bookController.fetchBook());
