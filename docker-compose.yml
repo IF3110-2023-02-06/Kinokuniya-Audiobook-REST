@@ -22,9 +22,10 @@ services:
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DB: ${MYSQL_DB}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ./mysql:/var/lib/mysql/
+      - ./mysql:/docker-entrypoint-initdb.d/:ro
     networks:
       - api-mysql-redis
   redis:

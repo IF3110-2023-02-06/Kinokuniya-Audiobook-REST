@@ -23,7 +23,7 @@ const generateMySQLPassword = () => {
 };
 
 const generateMySQLDatabase = () => {
-    return process.env.MYSQL_DB ? process.env.MYSQL_DB : "kino_rest";
+    return process.env.MYSQL_DATABASE ? process.env.MYSQL_DATABASE : "kino_rest";
 };
 
 const generateRedisHost = () => {

@@ -6,9 +6,7 @@ CREATE TABLE IF NOT EXISTS User (
   name VARCHAR(255),
   password VARCHAR(255) NOT NULL,
   isAdmin BOOLEAN DEFAULT 0,
-  -- Add more columns as needed
 
-  -- Create an index on the email and username columns for quick lookups
   INDEX email_idx (email),
   INDEX username_idx (username)
 );
@@ -18,10 +16,8 @@ CREATE TABLE IF NOT EXISTS Book (
   bookID INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   authorID INT NOT NULL,
-  audioPath VARCHAR(255)
-  -- Add more columns as needed
+  audioPath VARCHAR(255),
 
-  -- Create a foreign key constraint to link books to their authors
   CONSTRAINT fk_author
     FOREIGN KEY (authorID)
     REFERENCES User (userID)
