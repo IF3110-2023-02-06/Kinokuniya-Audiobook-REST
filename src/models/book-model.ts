@@ -23,9 +23,6 @@ export class Book extends BaseEntity {
     @Column()
     audioPath: string;
 
-    @Column()
-    duration: number;
-
     @ManyToOne(() => User, (user) => user.userID, { cascade: true })
     @JoinColumn({ name: "authorID" })
     user: User;

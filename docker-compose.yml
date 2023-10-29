@@ -24,7 +24,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
     volumes:
-      - ./mysql:/var/lib/mysql/data
+      - ./mysql:/var/lib/mysql/
     networks:
       - api-mysql-redis
   redis:
