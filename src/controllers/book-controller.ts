@@ -132,7 +132,7 @@ export class BookController {
             }
 
             // Not the requester's book
-            if (book.authorID != token.userID) {
+            if (book.authorID !== token.userID) {
                 res.status(StatusCodes.UNAUTHORIZED).json({
                     message: ReasonPhrases.UNAUTHORIZED,
                 });
@@ -177,7 +177,7 @@ export class BookController {
             }
 
             // Not the requester's book
-            if (book.authorID != token.userID) {
+            if (book.authorID !== token.userID) {
                 res.status(StatusCodes.UNAUTHORIZED).json({
                     message: ReasonPhrases.UNAUTHORIZED,
                 });
@@ -186,10 +186,6 @@ export class BookController {
 
             // Get old filename
             const oldFilename = book.audioPath;
-
-            // Update model
-            book.title = title;
-            book.audioPath = req.file!.filename;
 
             // Save the new book
             const newBook = await App.prisma.book.update({
@@ -259,9 +255,6 @@ export class BookController {
                 return;
             }
 
-            // Update model
-            book.title = title;
-
             // Save the new book
             const newBook = await App.prisma.book.update({
                 where: {
@@ -299,10 +292,6 @@ export class BookController {
             // Parse request param
             const bookID = parseInt(req.params.id);
 
-            // const book = await Book.findOneBy({
-            //     bookID,
-            // });
-
             const book = await App.prisma.book.findUnique({
                 where: {
                     bookID: bookID
@@ -324,8 +313,6 @@ export class BookController {
             }
 
             // Delete from database
-            // const deletedBook = await book.remove();
-
             const deletedBook = await App.prisma.book.delete({
                 where: {
                     bookID: bookID
@@ -374,10 +361,6 @@ export class BookController {
             }
 
             // Fetch all books by requester
-            // const books = await Book.findBy({
-            //     authorID: parseInt(authorID),
-            // });
-
             const books = await App.prisma.book.findMany({
                 where: {
                     authorID: creatorID
@@ -387,12 +370,12 @@ export class BookController {
             // Construct expected data
             const booksData: IBookData[] = [];
 
-            books.forEach((book: Book) => {
+            for (const book of books) {
                 booksData.push({
                     id: book.bookID,
                     title: book.title
                 });
-            });
+            }
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
@@ -408,10 +391,6 @@ export class BookController {
             const subscriberID = parseInt(req.query.subscriber_id as string);
             
             // Fetch all books by requester
-            // const book = await Book.findOneBy({
-            //     bookID
-            // });
-
             const book = await App.prisma.book.findUnique({
                 where: {
                     bookID: bookID
@@ -424,7 +403,7 @@ export class BookController {
 
             if (!isValid) {
                 res.status(StatusCodes.UNAUTHORIZED).json({
-                    message: ReasonPhrases.UNAUTHORIZED,
+                    message: ReasonPhrases.UNAUTHORIZED
                 });
                 return;
             }
@@ -432,7 +411,7 @@ export class BookController {
             // If book is not found
             if (!book) {
                 res.status(StatusCodes.NOT_FOUND).json({
-                    message: ReasonPhrases.NOT_FOUND,
+                    message: ReasonPhrases.NOT_FOUND
                 });
                 return;
             }
