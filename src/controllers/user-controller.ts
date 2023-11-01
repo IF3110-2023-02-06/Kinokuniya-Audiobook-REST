@@ -24,6 +24,7 @@ interface StoreRequest {
 }
 
 export class UserController {
+    // Generates a JWT token for a user.
     token() {
         return async (req: Request, res: Response) => {
             const { username, password }: TokenRequest = req.body;
@@ -68,6 +69,7 @@ export class UserController {
         };
     }
 
+    // Handles the registration process.
     store() {
         return async (req: Request, res: Response) => {
             const { email, username, name, password }: StoreRequest = req.body;
@@ -128,6 +130,7 @@ export class UserController {
         };
     }
 
+    // Retrieves a list of users and caches the result.
     index() {
         return async (req: Request, res: Response) => {
 
@@ -146,6 +149,7 @@ export class UserController {
         };
     }
 
+    // Checks the authentication status of a user.
     check() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;

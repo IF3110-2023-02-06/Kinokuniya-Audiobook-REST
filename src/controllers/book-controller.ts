@@ -44,7 +44,6 @@ export class BookController {
             book.authorID = token.userID;
             book.audioPath = req.file!.filename;
 
-            // Buat lagu
             const newBook = await book.save();
             if (!newBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({

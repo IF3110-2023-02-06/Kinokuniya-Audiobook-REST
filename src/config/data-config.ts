@@ -4,26 +4,26 @@ import { User } from "../models/user-model";
 import { Book } from "../models/book-model";
 import { UserSubscriber } from "../subscribers/user-subscriber";
 
-const generateMySQLHost = () => {
-    return process.env.MYSQL_HOST ? process.env.MYSQL_HOST : "localhost";
+const generatePostgreHost = () => {
+    return process.env.POSTGRES_HOST ? process.env.POSTGRES_HOST : "localhost";
 };
 
-const generateMySQLPort = () => {
-    return process.env.MYSQL_PORT ? +process.env.MYSQL_PORT : 5432;
+const generatePostgrePort = () => {
+    return process.env.POSTGRES_PORT ? +process.env.POSTGRES_PORT : 5432;
 };
 
-const generateMySQLUsername = () => {
-    return process.env.MYSQL_USER ? process.env.MYSQL_USER : "mysql";
+const generatePostgreUsername = () => {
+    return process.env.POSTGRES_USER ? process.env.POSTGRES_USER : "postgres";
 };
 
-const generateMySQLPassword = () => {
-    return process.env.MYSQL_PASSWORD
-        ? process.env.MYSQL_PASSWORD
+const generatePostgrePassword = () => {
+    return process.env.POSTGRES_PASSWORD
+        ? process.env.POSTGRES_PASSWORD
         : "password";
 };
 
-const generateMySQLDatabase = () => {
-    return process.env.MYSQL_DATABASE ? process.env.MYSQL_DATABASE : "kino_rest";
+const generatePostgreDatabase = () => {
+    return process.env.POSTGRES_DB ? process.env.POSTGRES_DB : "kino_rest";
 };
 
 const generateRedisHost = () => {
@@ -35,12 +35,12 @@ const generateRedisPort = () => {
 };
 
 export const dataConfig: DataSourceOptions = {
-    type: "mysql",
-    host: generateMySQLHost(),
-    port: generateMySQLPort(),
-    username: generateMySQLUsername(),
-    password: generateMySQLPassword(),
-    database: generateMySQLDatabase(),
+    type: "postgres",
+    host: generatePostgreHost(),
+    port: generatePostgrePort(),
+    username: generatePostgreUsername(),
+    password: generatePostgrePassword(),
+    database: generatePostgreDatabase(),
     cache: {
         type: "redis",
         options: {
