@@ -2,12 +2,11 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
 import { AuthRequest } from "../middlewares/authentication-middleware";
 
-import { Book } from "../models/book-model";
-
 import * as fs from "fs";
 import * as path from "path";
 
 import { SOAPService } from "../services/soap-services";
+import { App } from "../app";
 
 interface UpdateRequest {
     title: string;
@@ -17,11 +16,6 @@ interface IBookData {
     id: number;
     title: string;
 }
-
-// interface IPageData {
-//     page: number;
-//     totalPage: number;
-// }
 
 export class BookController {
     store() {
@@ -39,12 +33,14 @@ export class BookController {
             const { title } = req.body;
 
             // Create new book by author
-            const book = new Book();
-            book.title = title;
-            book.authorID = token.userID;
-            book.audioPath = req.file!.filename;
+            const newBook = away App.prisma.book.create({
+                data: {
+                    title: title,
+                    authorID: token.userID,
+                    audioPath: req.file!.filename
+                }
+            });
 
-            const newBook = await book.save();
             if (!newBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
@@ -72,23 +68,27 @@ export class BookController {
             // Get page query
             const page = parseInt((req.query?.page || "1") as string);
             const pageSize = parseInt((req.query?.pageSize || "5") as string);
+            
+            const books = await App.prisma.book.findMany({
+                select: {
+                    bookID: true,
+                    title: true
+                },
+                where: {
+                    authorID: token.userID
+                },
+                skip: (page - 1) * pageSize,
+                take: pageSize
+            });
 
-            const [books, length] = await Promise.all([
-                Book.createQueryBuilder("book")
-                    .select(["book.bookID", "book.title"])
-                    .where("book.authorID = :userID", {
-                        userID: token.userID,
-                    })
-                    .skip((page - 1) * pageSize)
-                    .take(pageSize)
-                    .getMany(),
-                Book.createQueryBuilder("book")
-                    .select(["book.bookID"])
-                    .where("book.authorID = :userID", {
-                        userID: token.userID,
-                    })
-                    .getCount(),
-            ]);
+            const length = await App.prisma.book.count({
+                select: {
+                    bookID: true
+                },
+                where: {
+                    authorID: token.userID
+                }
+            });
 
             let totalPage = Math.ceil(length / pageSize);
             if (totalPage === 0) {
@@ -117,8 +117,10 @@ export class BookController {
             const bookID = parseInt(req.params.id);
 
             // Fetch books
-            const book = await Book.findOneBy({
-                bookID,
+            const book = await App.prisma.book.findUnique({
+                where: {
+                    bookID: bookID
+                }
             });
 
             // If book is not found
@@ -160,8 +162,10 @@ export class BookController {
             // Parse request param
             const bookID = parseInt(req.params.id);
 
-            const book = await Book.findOneBy({
-                bookID,
+            const book = await App.prisma.book.findUnique({
+                where: {
+                    bookID: bookID
+                }
             });
 
             // If book is not found
@@ -188,7 +192,16 @@ export class BookController {
             book.audioPath = req.file!.filename;
 
             // Save the new book
-            const newBook = await book.save();
+            const newBook = await App.prisma.book.update({
+                where: {
+                    bookID: bookID
+                },
+                data: {
+                    title: title,
+                    audioPath: req.file!.filename
+                }
+            });
+
             if (!newBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
@@ -224,8 +237,10 @@ export class BookController {
             // Parse request param
             const bookID = parseInt(req.params.id);
 
-            const book = await Book.findOneBy({
-                bookID
+            const book = await App.prisma.book.findUnique({
+                where: {
+                    bookID: bookID
+                }
             });
 
             // If book is not found
@@ -248,7 +263,15 @@ export class BookController {
             book.title = title;
 
             // Save the new book
-            const newBook = await book.save();
+            const newBook = await App.prisma.book.update({
+                where: {
+                    bookID: bookID
+                },
+                data: {
+                    title: title
+                }
+            });
+
             if (!newBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
@@ -276,8 +299,14 @@ export class BookController {
             // Parse request param
             const bookID = parseInt(req.params.id);
 
-            const book = await Book.findOneBy({
-                bookID,
+            // const book = await Book.findOneBy({
+            //     bookID,
+            // });
+
+            const book = await App.prisma.book.findUnique({
+                where: {
+                    bookID: bookID
+                }
             });
 
             // If book is not found
@@ -295,7 +324,13 @@ export class BookController {
             }
 
             // Delete from database
-            const deletedBook = await book.remove();
+            // const deletedBook = await book.remove();
+
+            const deletedBook = await App.prisma.book.delete({
+                where: {
+                    bookID: bookID
+                }
+            });
             if (!deletedBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
@@ -339,8 +374,14 @@ export class BookController {
             }
 
             // Fetch all books by requester
-            const books = await Book.findBy({
-                authorID: parseInt(authorID),
+            // const books = await Book.findBy({
+            //     authorID: parseInt(authorID),
+            // });
+
+            const books = await App.prisma.book.findMany({
+                where: {
+                    authorID: creatorID
+                }
             });
 
             // Construct expected data
@@ -367,8 +408,14 @@ export class BookController {
             const subscriberID = parseInt(req.query.subscriber_id as string);
             
             // Fetch all books by requester
-            const book = await Book.findOneBy({
-                bookID
+            // const book = await Book.findOneBy({
+            //     bookID
+            // });
+
+            const book = await App.prisma.book.findUnique({
+                where: {
+                    bookID: bookID
+                }
             });
             
             // Authenticate subscription

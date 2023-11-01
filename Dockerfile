@@ -7,6 +7,8 @@ RUN yarn
 COPY tsconfig.json ./
 COPY src ./src
 
+RUN npx prisma generate
+
 CMD [ "yarn", "run", "start:dev" ]
 
 EXPOSE 3000

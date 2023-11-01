@@ -9,7 +9,7 @@ import {
 } from "../middlewares/authentication-middleware";
 import { cacheConfig } from "../config/cache-config";
 import { jwtConfig } from "../config/jwt-config";
-import { User } from "../models/user-model";
+import { App } from "../app";
 
 interface TokenRequest {
     username: string;
@@ -35,10 +35,16 @@ export class UserController {
                 return;
             }
 
-            const user = await User.createQueryBuilder("user")
-                .select(["user.userID", "user.password"])
-                .where("user.username = :username", { username })
-                .getOne();
+            const user = await App.prisma.user.findUnique({
+                where: {
+                    username: username
+                },
+                select: {
+                    userID: true,
+                    password: true
+                }
+            });
+            
             if (!user) {
                 res.status(StatusCodes.UNAUTHORIZED).json({
                     message: "Invalid credentials",
@@ -80,15 +86,10 @@ export class UserController {
                 return;
             }
 
-            const user = new User();
-            user.email = email;
-            user.username = username;
-            user.name = name;
-            user.password = password;
-
-            // Cek apakah data sudah ada ...
-            const existingUserWithUsername = await User.findOneBy({
-                username,
+            const existingUserWithUsername = await App.prisma.user.findUnique({
+                where: {
+                    username: username
+                }
             });
             if (existingUserWithUsername) {
                 res.status(StatusCodes.BAD_REQUEST).json({
@@ -97,8 +98,10 @@ export class UserController {
                 return;
             }
 
-            const existingUserWithEmail = await User.findOneBy({
-                email,
+            const existingUserWithEmail = await App.prisma.user.findUnique({
+                where: {
+                    email: email
+                }
             });
             if (existingUserWithEmail) {
                 res.status(StatusCodes.BAD_REQUEST).json({
@@ -107,7 +110,17 @@ export class UserController {
                 return;
             }
 
-            const newUser = await user.save();
+            const hashedPassword = await bcrypt.hash(password, bcryptConfig.saltRounds);
+
+            const newUser = await App.prisma.user.create({
+                data: {
+                    email: email,
+                    username: username,
+                    name: name,
+                    password: hashedPassword
+                }
+            });
+
             if (!newUser) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
@@ -130,17 +143,100 @@ export class UserController {
         };
     }
 
+    // Update the details of a user.
+    // Details conclude name, email, username, and password.
+    update() {
+        return async (req: Request, res: Response) => {
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
+            const { name, email, username, password }: StoreRequest = req.body;
+            if (!name || !email || !username || !password) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: ReasonPhrases.BAD_REQUEST,
+                });
+                return;
+            }
+
+            const user = await App.prisma.user.findUnique({
+                where: {
+                    userID: token.userID
+                }
+            });
+            if (!user) {
+                res.status(StatusCodes.NOT_FOUND).json({
+                    message: ReasonPhrases.NOT_FOUND,
+                });
+                return;
+            }
+
+            const existingUserWithUsername = await App.prisma.user.findUnique({
+                where: {
+                    username: username
+                }
+            });
+            if (existingUserWithUsername && existingUserWithUsername.userID !== token.userID) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Username already taken!",
+                });
+                return;
+            }
+
+            const existingUserWithEmail = await App.prisma.user.findUnique({
+                where: {
+                    email: email
+                }
+            });
+            if (existingUserWithEmail && existingUserWithEmail.userID !== token.userID) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: "Email already taken!",
+                });
+                return;
+            }
+
+            const hashedPassword = await bcrypt.hash(password, bcryptConfig.saltRounds);
+
+            const updatedUser = await App.prisma.user.update({
+                where: {
+                    userID: token.userID
+                },
+                data: {
+                    email: email,
+                    username: username,
+                    name: name,
+                    password: hashedPassword
+                }
+            });
+
+            if (!updatedUser) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: ReasonPhrases.BAD_REQUEST,
+                });
+                return;
+            }
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+            });
+        };
+    }
+
     // Retrieves a list of users and caches the result.
     index() {
         return async (req: Request, res: Response) => {
 
-            const users = await User.createQueryBuilder("user")
-                .select(["user.userID", "user.name"])
-                .cache(
-                    `author`,
-                    cacheConfig.cacheExpirationTime
-                )
-                .getMany()
+            const users = await App.prisma.user.findMany({
+                select: {
+                    userID: true,
+                    name: true
+                }
+            });
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
