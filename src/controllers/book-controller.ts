@@ -24,6 +24,7 @@ interface IBookData {
 }
 
 export class BookController {
+    // < REST API >
     // Creates a new book.
     store() {
         return async (req: Request, res: Response) => {
@@ -190,6 +191,7 @@ export class BookController {
         };
     }
 
+    // Update the details of a book.
     update() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -269,6 +271,7 @@ export class BookController {
         };
     }
 
+    // Update the title of a book.
     updateTitle() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -331,6 +334,7 @@ export class BookController {
         };
     }
 
+    // Delete a book.
     delete() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -404,6 +408,7 @@ export class BookController {
         };
     }
 
+    // < SOAP API >
     // Fetches all books by author.
     indexAuthor() {
         return async (req: Request, res: Response) => {
