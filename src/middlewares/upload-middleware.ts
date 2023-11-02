@@ -4,7 +4,7 @@ import * as path from "path";
 import multer from "multer";
 
 export class UploadMiddleware {
-    upload(filename: string) {
+    upload(fields: { cover: string, audio: string }) {
         const storage = multer.diskStorage({
             destination: (
                 req: Request,
@@ -19,11 +19,16 @@ export class UploadMiddleware {
                 callback: (error: Error | null, destination: string) => void
             ) => {
                 const uniqueSuffix = uuidv4();
-                callback(null, `${uniqueSuffix}.mp3`);
+                const fileExtension = path.extname(file.originalname);
+                callback(null, `${uniqueSuffix}${fileExtension}`);
             },
         });
         const upload = multer({ storage: storage });
 
-        return upload.single(filename);
+        // Use .fields() to accept multiple files with different field names
+        return upload.fields([
+            { name: fields.cover, maxCount: 1 }, // Cover image
+            { name: fields.audio, maxCount: 1 }, // Audio file
+        ]);
     }
 }

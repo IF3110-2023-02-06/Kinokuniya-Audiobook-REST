@@ -15,9 +15,16 @@ interface UpdateRequest {
 interface IBookData {
     id: number;
     title: string;
+    category: string;
+    bookDesc: string;
+    price: number;
+    publicationDate: Date;
+    coverFile: Buffer;
+    audioFile: Buffer;
 }
 
 export class BookController {
+    // Creates a new book.
     store() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -30,14 +37,22 @@ export class BookController {
             }
 
             // Parse request body
-            const { title } = req.body;
+            const { title, category, bookDesc, price, publicationDate } = req.body;
+
+            // Assert the type of req.files to let TypeScript know the structure
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
             // Create new book by author
             const newBook = await App.prisma.book.create({
                 data: {
                     title: title,
                     authorID: token.userID,
-                    audioPath: req.file!.filename
+                    category: category,
+                    bookDesc: bookDesc,
+                    price: price,
+                    publicationDate: publicationDate,
+                    coverPath: files['cover'][0].filename,
+                    audioPath: files['audio'][0].filename
                 }
             });
 
@@ -54,6 +69,7 @@ export class BookController {
         };
     }
 
+    // Fetches all books by requester.
     index() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -70,10 +86,6 @@ export class BookController {
             const pageSize = parseInt((req.query?.pageSize || "5") as string);
             
             const books = await App.prisma.book.findMany({
-                select: {
-                    bookID: true,
-                    title: true
-                },
                 where: {
                     authorID: token.userID
                 },
@@ -92,14 +104,34 @@ export class BookController {
                 totalPage = 1;
             }
 
+            // Construct expected data
+            const booksData: IBookData[] = [];
+
+            for (const book of books) {
+                const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
+                const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+
+                booksData.push({
+                    id: book.bookID,
+                    title: book.title,
+                    category: book.category,
+                    bookDesc: book.bookDesc,
+                    price: book.price,
+                    publicationDate: book.publicationDate,
+                    coverFile: coverFile,
+                    audioFile: audioFile
+                });
+            }
+
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
-                data: books,
-                totalPage: totalPage,
+                data: booksData,
+                totalPage: totalPage
             });
         };
     }
 
+    // Fetches a book by requester.
     show() {
         return async (req: Request, res: Response) => {
             const { token } = req as AuthRequest;
@@ -113,7 +145,7 @@ export class BookController {
 
             const bookID = parseInt(req.params.id);
 
-            // Fetch books
+            // Fetch book by requester
             const book = await App.prisma.book.findUnique({
                 where: {
                     bookID: bookID
@@ -136,9 +168,25 @@ export class BookController {
                 return;
             }
 
-            res.sendFile(
-                path.join(__dirname, "..", "..", "uploads", book.audioPath)
-            );
+            // Construct expected data
+            const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
+            const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+
+            const bookData: IBookData = {
+                id: book.bookID,
+                title: book.title,
+                category: book.category,
+                bookDesc: book.bookDesc,
+                price: book.price,
+                publicationDate: book.publicationDate,
+                coverFile: coverFile,
+                audioFile: audioFile
+            };
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+                data: bookData,
+            });
         };
     }
 
@@ -154,7 +202,7 @@ export class BookController {
             }
 
             // Parse request body
-            const { title }: UpdateRequest = req.body;
+            const { title, category, bookDesc, price, publicationDate } = req.body;
 
             // Parse request param
             const bookID = parseInt(req.params.id);
@@ -182,20 +230,29 @@ export class BookController {
             }
 
             // Get old filename
-            const oldFilename = book.audioPath;
+            const oldAudioPath = book.audioPath;
+            const oldCoverPath = book.coverPath;
+
+            // Assert the type of req.files to let TypeScript know the structure
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
             // Save the new book
-            const newBook = await App.prisma.book.update({
+            const updatedBook = await App.prisma.book.update({
                 where: {
-                    bookID: bookID
+                    bookID: bookID,
                 },
                 data: {
                     title: title,
-                    audioPath: req.file!.filename
-                }
+                    category: category,
+                    bookDesc: bookDesc,
+                    price: price,
+                    publicationDate: publicationDate,
+                    audioPath: files['audio'][0].filename,
+                    coverPath: files['cover'][0].filename,
+                },
             });
 
-            if (!newBook) {
+            if (!updatedBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     message: ReasonPhrases.BAD_REQUEST,
                 });
@@ -203,9 +260,8 @@ export class BookController {
             }
 
             // Delete old file from storage
-            fs.unlinkSync(
-                path.join(__dirname, "..", "..", "uploads", oldFilename)
-            );
+            fs.unlinkSync(path.join(__dirname, '..', '..', 'uploads', oldAudioPath));
+            fs.unlinkSync(path.join(__dirname, '..', '..', 'uploads', oldCoverPath));
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
@@ -332,6 +388,15 @@ export class BookController {
                     deletedBook.audioPath
                 )
             );
+            fs.unlinkSync(
+                path.join(
+                    __dirname,
+                    "..",
+                    "..",
+                    "uploads",
+                    deletedBook.coverPath
+                )
+            );
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
@@ -339,6 +404,7 @@ export class BookController {
         };
     }
 
+    // Fetches all books by author.
     indexAuthor() {
         return async (req: Request, res: Response) => {
             // Get page query
@@ -368,9 +434,18 @@ export class BookController {
             const booksData: IBookData[] = [];
 
             for (const book of books) {
+                const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
+                const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+
                 booksData.push({
                     id: book.bookID,
-                    title: book.title
+                    title: book.title,
+                    category: book.category,
+                    bookDesc: book.bookDesc,
+                    price: book.price,
+                    publicationDate: book.publicationDate,
+                    coverFile: coverFile,
+                    audioFile: audioFile
                 });
             }
 
@@ -381,6 +456,7 @@ export class BookController {
         };
     }
 
+    // Fetches a book by book ID.
     fetchBook() {
         return async (req: Request, res: Response) => {
             
@@ -413,9 +489,25 @@ export class BookController {
                 return;
             }
 
-            res.sendFile(
-                path.join(__dirname, "..", "..", "uploads", book.audioPath)
-            );
+            // Construct expected data
+            const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
+            const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+
+            const bookData: IBookData = {
+                id: book.bookID,
+                title: book.title,
+                category: book.category,
+                bookDesc: book.bookDesc,
+                price: book.price,
+                publicationDate: book.publicationDate,
+                coverFile: coverFile,
+                audioFile: audioFile
+            };
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+                data: bookData
+            });
         };
     }
 }

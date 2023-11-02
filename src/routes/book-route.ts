@@ -23,7 +23,7 @@ export class BookRoute {
             .post(
                 "/book",
                 this.authenticationMiddleware.authenticate(),
-                this.uploadMiddleware.upload("file"),
+                this.uploadMiddleware.upload({cover: "cover", audio: "audio"}),
                 this.bookController.store()
             )
             .get(
@@ -44,7 +44,7 @@ export class BookRoute {
             .put(
                 "/book/:id",
                 this.authenticationMiddleware.authenticate(),
-                this.uploadMiddleware.upload("file"),
+                this.uploadMiddleware.upload({cover: "cover", audio: "audio"}),
                 this.bookController.update()
             )
             .delete(
