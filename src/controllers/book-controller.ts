@@ -33,7 +33,7 @@ export class BookController {
             const { title } = req.body;
 
             // Create new book by author
-            const newBook = away App.prisma.book.create({
+            const newBook = await App.prisma.book.create({
                 data: {
                     title: title,
                     authorID: token.userID,
@@ -82,9 +82,6 @@ export class BookController {
             });
 
             const length = await App.prisma.book.count({
-                select: {
-                    bookID: true
-                },
                 where: {
                     authorID: token.userID
                 }

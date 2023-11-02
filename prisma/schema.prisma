@@ -11,7 +11,7 @@ model User {
   userID    Int      @id @default(autoincrement())
   email     String   @unique
   username  String   @unique
-  name      String?
+  name      String
   password  String
   books     Book[]
 }
@@ -20,6 +20,6 @@ model Book {
   bookID    Int      @id @default(autoincrement())
   title     String
   authorID  Int
-  audioPath String?
+  audioPath String
   user      User     @relation(fields: [authorID], references: [userID])
 }
