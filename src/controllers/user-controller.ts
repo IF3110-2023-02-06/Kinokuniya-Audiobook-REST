@@ -2,12 +2,13 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { bcryptConfig } from "../config/bcrypt-config";
 
 import {
     AuthToken,
     AuthRequest,
 } from "../middlewares/authentication-middleware";
-import { cacheConfig } from "../config/cache-config";
+// import { cacheConfig } from "../config/cache-config";
 import { jwtConfig } from "../config/jwt-config";
 import { App } from "../app";
 
@@ -70,7 +71,7 @@ export class UserController {
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
-                token,
+                token
             });
         };
     }

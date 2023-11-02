@@ -7,19 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model user {
   userID    Int      @id @default(autoincrement())
   email     String   @unique
   username  String   @unique
   name      String
   password  String
-  books     Book[]
+  books     book[]
 }
 
-model Book {
+model book {
   bookID    Int      @id @default(autoincrement())
   title     String
   authorID  Int
   audioPath String
-  user      User     @relation(fields: [authorID], references: [userID])
+  user      user     @relation(fields: [authorID], references: [userID])
 }

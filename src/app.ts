@@ -35,7 +35,6 @@ export class App {
 
     async run() {
         try {
-            await this.prisma.$connect();
             this.server.listen(serverConfig.port, () => {
                 console.log(`Server is running on port: ${serverConfig.port}`);
             });
