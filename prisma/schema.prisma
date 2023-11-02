@@ -20,6 +20,11 @@ model book {
   bookID    Int      @id @default(autoincrement())
   title     String
   authorID  Int
+  category  String
+  bookDesc  String
+  price     Int
+  publicationDate DateTime
+  coverPath String
   audioPath String
   user      user     @relation(fields: [authorID], references: [userID])
 }

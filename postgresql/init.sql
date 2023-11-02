@@ -12,6 +12,11 @@ CREATE TABLE IF NOT EXISTS "book" (
   "bookID" SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   "authorID" INT NOT NULL,
+  "category" VARCHAR(255) NOT NULL,
+  "bookDesc" TEXT NOT NULL,
+  "price" INT NOT NULL,
+  "publicationDate" DATE NOT NULL,
+  "coverPath" VARCHAR(255) NOT NULL,
   "audioPath" VARCHAR(255) NOT NULL,
   FOREIGN KEY ("authorID") REFERENCES "user" ("userID") ON DELETE CASCADE
 );
