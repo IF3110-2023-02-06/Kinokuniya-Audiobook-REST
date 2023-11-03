@@ -8,23 +8,33 @@ datasource db {
 }
 
 model user {
-  userID    Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String   @unique
-  name      String
-  password  String
-  books     book[]
+  userID   Int    @id @default(autoincrement())
+  email    String @unique
+  username String @unique
+  name     String
+  password String
+  books    book[]
 }
 
 model book {
-  bookID    Int      @id @default(autoincrement())
-  title     String
-  authorID  Int
-  category  String
-  bookDesc  String
-  price     Int
+  bookID          Int      @id @default(autoincrement())
+  title           String
+  authorID        Int
+  category        String
+  seriesID        Int?
+  bookDesc        String
+  price           Int
   publicationDate DateTime
-  coverPath String
-  audioPath String
-  user      user     @relation(fields: [authorID], references: [userID])
+  coverPath       String
+  audioPath       String
+  user            user     @relation(fields: [authorID], references: [userID])
+  series          series?  @relation(fields: [seriesID], references: [seriesID])
+}
+
+model series {
+  seriesID        Int    @id @default(autoincrement())
+  seriesName      String
+  seriesDesc      String
+  seriesCoverPath String
+  book            book[]
 }

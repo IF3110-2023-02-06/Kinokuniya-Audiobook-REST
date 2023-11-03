@@ -16,6 +16,7 @@ interface IBookData {
     id: number;
     title: string;
     category: string;
+    seriesID: number | null;
     bookDesc: string;
     price: number;
     publicationDate: Date;
@@ -38,7 +39,9 @@ export class BookController {
             }
 
             // Parse request body
-            const { title, category, bookDesc, price, publicationDate } = req.body;
+            const { title, category, seriesID, bookDesc, price, publicationDate } = req.body;
+
+            const seriesIDInt = seriesID ? parseInt(seriesID) : null;
 
             // Assert the type of req.files to let TypeScript know the structure
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -49,6 +52,7 @@ export class BookController {
                     title: title,
                     authorID: token.userID,
                     category: category,
+                    seriesID: seriesIDInt,
                     bookDesc: bookDesc,
                     price: price,
                     publicationDate: publicationDate,
@@ -116,6 +120,7 @@ export class BookController {
                     id: book.bookID,
                     title: book.title,
                     category: book.category,
+                    seriesID: book.seriesID,
                     bookDesc: book.bookDesc,
                     price: book.price,
                     publicationDate: book.publicationDate,
@@ -177,6 +182,7 @@ export class BookController {
                 id: book.bookID,
                 title: book.title,
                 category: book.category,
+                seriesID: book.seriesID,
                 bookDesc: book.bookDesc,
                 price: book.price,
                 publicationDate: book.publicationDate,
@@ -204,7 +210,9 @@ export class BookController {
             }
 
             // Parse request body
-            const { title, category, bookDesc, price, publicationDate } = req.body;
+            const { title, category, seriesID, bookDesc, price, publicationDate } = req.body;
+
+            const seriesIDInt = seriesID ? parseInt(seriesID) : null;
 
             // Parse request param
             const bookID = parseInt(req.params.id);
@@ -246,6 +254,7 @@ export class BookController {
                 data: {
                     title: title,
                     category: category,
+                    seriesID: seriesIDInt,
                     bookDesc: bookDesc,
                     price: price,
                     publicationDate: publicationDate,
@@ -358,13 +367,13 @@ export class BookController {
             // If book is not found
             if (!book) {
                 res.status(StatusCodes.NOT_FOUND).json({
-                    message: ReasonPhrases.NOT_FOUND,
+                    message: ReasonPhrases.NOT_FOUND
                 });
                 return;
             }
             if (book.authorID != token.userID) {
                 res.status(StatusCodes.UNAUTHORIZED).json({
-                    message: ReasonPhrases.UNAUTHORIZED,
+                    message: ReasonPhrases.UNAUTHORIZED
                 });
                 return;
             }
@@ -377,7 +386,7 @@ export class BookController {
             });
             if (!deletedBook) {
                 res.status(StatusCodes.BAD_REQUEST).json({
-                    message: ReasonPhrases.BAD_REQUEST,
+                    message: ReasonPhrases.BAD_REQUEST
                 });
                 return;
             }
@@ -446,6 +455,7 @@ export class BookController {
                     id: book.bookID,
                     title: book.title,
                     category: book.category,
+                    seriesID: book.seriesID,
                     bookDesc: book.bookDesc,
                     price: book.price,
                     publicationDate: book.publicationDate,
@@ -502,6 +512,7 @@ export class BookController {
                 id: book.bookID,
                 title: book.title,
                 category: book.category,
+                seriesID: book.seriesID,
                 bookDesc: book.bookDesc,
                 price: book.price,
                 publicationDate: book.publicationDate,
