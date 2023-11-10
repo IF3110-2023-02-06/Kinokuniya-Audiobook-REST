@@ -10,9 +10,7 @@ CREATE TABLE IF NOT EXISTS "user" (
 -- Create the Series table
 CREATE TABLE IF NOT EXISTS "series" (
   "seriesID" SERIAL PRIMARY KEY,
-  "seriesName" VARCHAR(255) NOT NULL,
-  "seriesDesc" TEXT NOT NULL,
-  "seriesCoverPath" VARCHAR(255) NOT NULL
+  "seriesName" VARCHAR(255) NOT NULL
 );
 
 -- Create the Book table
@@ -30,6 +28,13 @@ CREATE TABLE IF NOT EXISTS "book" (
   FOREIGN KEY ("authorID") REFERENCES "user" ("userID") ON DELETE CASCADE,
   FOREIGN KEY ("seriesID") REFERENCES "series" ("seriesID") ON DELETE CASCADE
 );
+
+-- Add sample series
+INSERT INTO "series" ("seriesName")
+VALUES ('The Lord of the Rings'),
+('Harry Potter'),
+('The Hunger Games'),
+('The Chronicles of Narnia');
 
 -- Define a unique constraint on the email and username columns
 -- to enforce uniqueness

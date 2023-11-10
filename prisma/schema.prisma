@@ -32,9 +32,7 @@ model book {
 }
 
 model series {
-  seriesID        Int    @id @default(autoincrement())
-  seriesName      String
-  seriesDesc      String
-  seriesCoverPath String
-  book            book[]
+  seriesID   Int    @id @default(autoincrement())
+  seriesName String
+  book       book[]
 }

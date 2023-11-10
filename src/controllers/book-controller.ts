@@ -24,6 +24,11 @@ interface IBookData {
     audioFile: Buffer;
 }
 
+interface ISeriesData {
+    seriesID: number;
+    seriesName: string;
+}
+
 export class BookController {
     // < REST API >
     // Creates a new book.
@@ -42,6 +47,16 @@ export class BookController {
             const { title, category, seriesID, bookDesc, price, publicationDate } = req.body;
 
             const seriesIDInt = seriesID ? parseInt(seriesID) : null;
+            const priceInt = parseInt(price);
+
+            // Validate publication date to ISO 8601 format
+            const date = new Date(publicationDate);
+            if (date.toString() === 'Invalid Date') {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: ReasonPhrases.BAD_REQUEST,
+                });
+                return;
+            }
 
             // Assert the type of req.files to let TypeScript know the structure
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -52,10 +67,10 @@ export class BookController {
                     title: title,
                     authorID: token.userID,
                     category: category,
-                    seriesID: seriesIDInt,
+                    seriesID: seriesIDInt, 
                     bookDesc: bookDesc,
-                    price: price,
-                    publicationDate: publicationDate,
+                    price: priceInt,
+                    publicationDate: date,
                     coverPath: files['cover'][0].filename,
                     audioPath: files['audio'][0].filename
                 }
@@ -213,6 +228,16 @@ export class BookController {
             const { title, category, seriesID, bookDesc, price, publicationDate } = req.body;
 
             const seriesIDInt = seriesID ? parseInt(seriesID) : null;
+            const priceInt = parseInt(price);
+
+            // Validate publication date to ISO 8601 format 
+            const date = new Date(publicationDate);
+            if (date.toString() === 'Invalid Date') {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: ReasonPhrases.BAD_REQUEST,
+                });
+                return;
+            }
 
             // Parse request param
             const bookID = parseInt(req.params.id);
@@ -256,8 +281,8 @@ export class BookController {
                     category: category,
                     seriesID: seriesIDInt,
                     bookDesc: bookDesc,
-                    price: price,
-                    publicationDate: publicationDate,
+                    price: priceInt,
+                    publicationDate: date,
                     audioPath: files['audio'][0].filename,
                     coverPath: files['cover'][0].filename,
                 },
@@ -415,6 +440,84 @@ export class BookController {
                 message: ReasonPhrases.OK,
             });
         };
+    }
+
+    // Creates a new series.
+    storeSeries() {
+        return async (req: Request, res: Response) => {
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
+            // Parse request body
+            const { seriesName } = req.body;
+
+            // Create new series by author
+            const newSeries = await App.prisma.series.create({
+                data: {
+                    seriesName: seriesName
+                }
+            });
+
+            if (!newSeries) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    message: ReasonPhrases.BAD_REQUEST,
+                });
+                return;
+            }
+
+            res.status(StatusCodes.CREATED).json({
+                message: ReasonPhrases.CREATED,
+            });
+        };
+    }
+
+    // Fetches all series where author's books are part of.
+    indexSeries() {
+        return async (req: Request, res: Response) => {
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
+            // Get the author ID
+            const authorID = token.userID;
+
+            // Fetch all series by author
+            const series = await App.prisma.series.findMany({
+                where: {
+                    book: {
+                        some: {
+                            authorID: authorID
+                        }
+                    }
+                }
+            });
+
+            // Construct expected data
+            const seriesData: ISeriesData[] = [];
+
+            for (const s of series) {
+                seriesData.push({
+                    seriesID: s.seriesID,
+                    seriesName: s.seriesName
+                });
+            }
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+                data: seriesData
+            });
+        }
     }
 
     // < SOAP API >

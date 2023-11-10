@@ -57,6 +57,17 @@ export class BookRoute {
                 this.bookController.indexAuthor())
             .get(
                 "/app/book/listen/:bookID", 
-                this.bookController.fetchBook());
+                this.bookController.fetchBook())
+            .post(
+                "/series",
+                this.authenticationMiddleware.authenticate(),
+                this.uploadMiddleware.uploadCover(),
+                this.bookController.storeSeries()
+            )
+            .get(
+                "/series",
+                this.authenticationMiddleware.authenticate(),
+                this.bookController.indexSeries()
+            )
     }
 }
