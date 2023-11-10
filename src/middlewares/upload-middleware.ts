@@ -11,7 +11,12 @@ export class UploadMiddleware {
                 file: Express.Multer.File,
                 callback: (error: Error | null, destination: string) => void
             ) => {
-                callback(null, path.join(__dirname, "..", "..", "uploads"));
+                // Determine the destination based on the field name
+                const destination = fields.cover === file.fieldname
+                    ? path.join(__dirname, "..", "uploads", "image")
+                    : path.join(__dirname, "..", "uploads", "audio");
+
+                callback(null, destination);
             },
             filename: (
                 req: Request,
@@ -39,7 +44,7 @@ export class UploadMiddleware {
                 file: Express.Multer.File,
                 callback: (error: Error | null, destination: string) => void
             ) => {
-                callback(null, path.join(__dirname, "..", "..", "uploads"));
+                callback(null, path.join(__dirname, "..", "uploads", "image"));
             },
             filename: (
                 req: Request,

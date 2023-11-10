@@ -15,13 +15,14 @@ interface UpdateRequest {
 interface IBookData {
     id: number;
     title: string;
+    author: string;
     category: string;
     seriesID: number | null;
     bookDesc: string;
     price: number;
     publicationDate: Date;
-    coverFile: Buffer;
-    audioFile: Buffer;
+    coverPath: string;
+    audioPath: string;
 }
 
 interface ISeriesData {
@@ -128,19 +129,30 @@ export class BookController {
             const booksData: IBookData[] = [];
 
             for (const book of books) {
-                const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
-                const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+                
+                // Get author name
+                const author = await App.prisma.user.findUnique({
+                    select: {
+                        name: true
+                    },
+                    where: {
+                        userID: book.authorID
+                    }
+                });
+
+                console.log(author);
 
                 booksData.push({
                     id: book.bookID,
                     title: book.title,
+                    author: author!.name,
                     category: book.category,
                     seriesID: book.seriesID,
                     bookDesc: book.bookDesc,
                     price: book.price,
-                    publicationDate: book.publicationDate,
-                    coverFile: coverFile,
-                    audioFile: audioFile
+                    publicationDate: new Date(book.publicationDate),
+                    coverPath: book.coverPath,
+                    audioPath: book.audioPath
                 });
             }
 
@@ -190,19 +202,30 @@ export class BookController {
             }
 
             // Construct expected data
-            const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
-            const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+            const coverFile = fs.readFileSync(path.join(__dirname, '..', 'uploads', 'image', book.coverPath));
+            const audioFile = fs.readFileSync(path.join(__dirname, '..', 'uploads', 'audio', book.audioPath));
+
+            // Get author name
+            const author = await App.prisma.user.findUnique({
+                select: {
+                    name: true
+                },
+                where: {
+                    userID: book.authorID
+                }
+            });
 
             const bookData: IBookData = {
                 id: book.bookID,
                 title: book.title,
+                author: author!.name,
                 category: book.category,
                 seriesID: book.seriesID,
                 bookDesc: book.bookDesc,
                 price: book.price,
-                publicationDate: book.publicationDate,
-                coverFile: coverFile,
-                audioFile: audioFile
+                publicationDate: new Date(book.publicationDate),
+                coverPath: book.coverPath,
+                audioPath: book.audioPath
             };
 
             res.status(StatusCodes.OK).json({
@@ -278,6 +301,7 @@ export class BookController {
                 },
                 data: {
                     title: title,
+                    authorID: token.userID,
                     category: category,
                     seriesID: seriesIDInt,
                     bookDesc: bookDesc,
@@ -296,8 +320,8 @@ export class BookController {
             }
 
             // Delete old file from storage
-            fs.unlinkSync(path.join(__dirname, '..', '..', 'uploads', oldAudioPath));
-            fs.unlinkSync(path.join(__dirname, '..', '..', 'uploads', oldCoverPath));
+            fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'image', oldCoverPath));
+            fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'audio', oldAudioPath));
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
@@ -421,18 +445,18 @@ export class BookController {
                 path.join(
                     __dirname,
                     "..",
-                    "..",
                     "uploads",
-                    deletedBook.audioPath
+                    "image",
+                    deletedBook.coverPath
                 )
             );
             fs.unlinkSync(
                 path.join(
                     __dirname,
                     "..",
-                    "..",
                     "uploads",
-                    deletedBook.coverPath
+                    "audio",
+                    deletedBook.audioPath
                 )
             );
 
@@ -551,19 +575,28 @@ export class BookController {
             const booksData: IBookData[] = [];
 
             for (const book of books) {
-                const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
-                const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+                                
+                // Get author name
+                const author = await App.prisma.user.findUnique({
+                    select: {
+                        name: true
+                    },
+                    where: {
+                        userID: book.authorID
+                    }
+                });
 
                 booksData.push({
                     id: book.bookID,
                     title: book.title,
+                    author: author!.name,
                     category: book.category,
                     seriesID: book.seriesID,
                     bookDesc: book.bookDesc,
                     price: book.price,
-                    publicationDate: book.publicationDate,
-                    coverFile: coverFile,
-                    audioFile: audioFile
+                    publicationDate: new Date(book.publicationDate),
+                    coverPath: book.coverPath,
+                    audioPath: book.audioPath
                 });
             }
 
@@ -608,19 +641,30 @@ export class BookController {
             }
 
             // Construct expected data
-            const coverFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.coverPath));
-            const audioFile = fs.readFileSync(path.join(__dirname, '..', '..', 'uploads', book.audioPath));
+            const coverFile = fs.readFileSync(path.join(__dirname, '..', 'uploads', 'image', book.coverPath));
+            const audioFile = fs.readFileSync(path.join(__dirname, '..', 'uploads', 'audio', book.audioPath));
+
+            // Get author name
+            const author = await App.prisma.user.findUnique({
+                select: {
+                    name: true
+                },
+                where: {
+                    userID: book.authorID
+                }
+            });
 
             const bookData: IBookData = {
                 id: book.bookID,
                 title: book.title,
+                author: author!.name,
                 category: book.category,
                 seriesID: book.seriesID,
                 bookDesc: book.bookDesc,
                 price: book.price,
-                publicationDate: book.publicationDate,
-                coverFile: coverFile,
-                audioFile: audioFile
+                publicationDate: new Date(book.publicationDate),
+                coverPath: book.coverPath,
+                audioPath: book.audioPath
             };
 
             res.status(StatusCodes.OK).json({

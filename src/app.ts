@@ -26,6 +26,7 @@ export class App {
             "/api",
             express.json(),
             express.urlencoded({ extended: true }),
+            express.static('src/uploads'),
             morgan("combined"),
             userRoute.getRoute(),
             bookRoute.getRoute(),
