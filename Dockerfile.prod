@@ -4,12 +4,9 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn
 
-COPY tsconfig.json ./
-COPY src ./src
-
+COPY . .
 RUN npx prisma generate
 
-RUN yarn run build
 CMD [ "yarn", "run", "start:prod" ]
 
 EXPOSE 3000
