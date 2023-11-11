@@ -102,13 +102,21 @@ export class BookController {
                 return;
             }
 
+            // Get the title query
+            const title = (req.query?.title || "" ) as string;
+
             // Get page query
             const page = parseInt((req.query?.page || "1") as string);
             const pageSize = parseInt((req.query?.pageSize || "5") as string);
             
+            // Fetch all books by requester.
             const books = await App.prisma.book.findMany({
                 where: {
-                    authorID: token.userID
+                    authorID: token.userID,
+                    title: {
+                        mode: 'insensitive',
+                        contains: title
+                    }
                 },
                 skip: (page - 1) * pageSize,
                 take: pageSize
@@ -140,8 +148,6 @@ export class BookController {
                     }
                 });
 
-                console.log(author);
-
                 booksData.push({
                     id: book.bookID,
                     title: book.title,
@@ -163,6 +169,90 @@ export class BookController {
             });
         };
     }
+
+    // Search a book by query param.
+    // searchTitle() {
+    //     return async (req: Request, res: Response) => {
+    //         const { token } = req as AuthRequest;
+    //         if (!token) {
+    //             res.status(StatusCodes.UNAUTHORIZED).json({
+    //                 message: ReasonPhrases.UNAUTHORIZED,
+    //             });
+    //             return;
+    //         }
+
+    //         // Get page query
+    //         const page = parseInt((req.query?.page || "1") as string);
+    //         const pageSize = parseInt((req.query?.pageSize || "5") as string);
+
+    //         // Parse request param
+    //         const title = req.query.title as string;
+
+    //         // console.log(title);
+
+    //         // Fetch all books by requester
+    //         const books = await App.prisma.book.findMany({
+    //             where: {
+    //                 authorID: token.userID,
+    //                 title: {
+    //                     contains: title
+    //                 }
+    //             },
+    //             skip: (page - 1) * pageSize,
+    //             take: pageSize
+    //         });
+
+    //         const length = await App.prisma.book.count({
+    //             where: {
+    //                 authorID: token.userID,
+    //                 title: {
+    //                     contains: title
+    //                 }
+    //             }
+    //         });
+
+    //         let totalPage = Math.ceil(length / pageSize);
+    //         if (totalPage === 0) {
+    //             totalPage = 1;
+    //         }
+
+    //         // Construct expected data
+    //         const booksData: IBookData[] = [];
+
+    //         for (const book of books) {
+                
+    //             // Get author name
+    //             const author = await App.prisma.user.findUnique({
+    //                 select: {
+    //                     name: true
+    //                 },
+    //                 where: {
+    //                     userID: book.authorID
+    //                 }
+    //             });
+
+    //             booksData.push({
+    //                 id: book.bookID,
+    //                 title: book.title,
+    //                 author: author!.name,
+    //                 category: book.category,
+    //                 seriesID: book.seriesID,
+    //                 bookDesc: book.bookDesc,
+    //                 price: book.price,
+    //                 publicationDate: new Date(book.publicationDate),
+    //                 coverPath: book.coverPath,
+    //                 audioPath: book.audioPath
+    //             });
+    //         }
+
+    //         res.status(StatusCodes.OK).json({
+    //             message: ReasonPhrases.OK,
+    //             data: booksData,
+    //             totalPage: totalPage
+    //         });
+
+    //     }
+    // }
 
     // Fetches a book by requester.
     show() {
