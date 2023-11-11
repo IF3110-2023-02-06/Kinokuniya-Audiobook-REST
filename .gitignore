@@ -110,4 +110,4 @@ dist
 # postgresql/
 redis/
 
-uploads/**
+src/uploads/**
