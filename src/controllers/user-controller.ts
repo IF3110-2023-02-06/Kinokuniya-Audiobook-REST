@@ -227,20 +227,30 @@ export class UserController {
         };
     }
 
-    // Retrieves a list of users and caches the result.
+    // Retrieves data of the authenticated user.
     index() {
         return async (req: Request, res: Response) => {
 
-            const users = await App.prisma.user.findMany({
-                select: {
-                    userID: true,
-                    name: true
+            console.log(req);
+
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
+            const user = await App.prisma.user.findUnique({
+                where: {
+                    userID: token.userID
                 }
             });
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
-                data: users
+                data: user
             });
         };
     }

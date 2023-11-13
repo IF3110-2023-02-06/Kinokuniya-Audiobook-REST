@@ -17,12 +17,19 @@ export class UserRoute {
             .post("/user/token", this.userController.token())
             .post("/user", this.userController.store())
             .get(
-                "/user", this.userController.index()
+                "/user", 
+                this.authenticationMiddleware.authenticate(),
+                this.userController.index()
             )
             .get(
                 "/user/check", 
                 this.authenticationMiddleware.authenticate(),
                 this.userController.check()
+            )
+            .put(
+                "/user", 
+                this.authenticationMiddleware.authenticate(),
+                this.userController.update()
             )
     }
 }
