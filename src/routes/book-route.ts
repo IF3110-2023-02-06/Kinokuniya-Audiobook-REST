@@ -37,11 +37,6 @@ export class BookRoute {
                 this.bookController.show()
             )
             .put(
-                "/book/title/:id",
-                this.authenticationMiddleware.authenticate(),
-                this.bookController.updateTitle()
-            )
-            .put(
                 "/book/:id",
                 this.authenticationMiddleware.authenticate(),
                 this.uploadMiddleware.upload({cover: "cover", audio: "audio"}),
@@ -68,6 +63,11 @@ export class BookRoute {
                 "/series",
                 this.authenticationMiddleware.authenticate(),
                 this.bookController.indexSeries()
+            )
+            .get(
+                "/analytics",
+                this.authenticationMiddleware.authenticate(),
+                this.bookController.analytics()
             )
     }
 }

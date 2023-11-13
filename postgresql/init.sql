@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS "book" (
   "bookDesc" TEXT NOT NULL,
   "price" INT NOT NULL,
   "publicationDate" DATE NOT NULL,
+  "copiesSold" INT NOT NULL DEFAULT 0,
   "coverPath" VARCHAR(255) NOT NULL,
   "audioPath" VARCHAR(255) NOT NULL,
   FOREIGN KEY ("authorID") REFERENCES "user" ("userID") ON DELETE CASCADE,

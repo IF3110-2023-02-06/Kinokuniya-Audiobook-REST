@@ -25,6 +25,7 @@ model book {
   bookDesc        String
   price           Int
   publicationDate DateTime
+  copiesSold      Int      @default(0)
   coverPath       String
   audioPath       String
   user            user     @relation(fields: [authorID], references: [userID])

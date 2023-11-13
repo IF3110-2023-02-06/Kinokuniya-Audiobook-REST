@@ -8,10 +8,6 @@ import * as path from "path";
 import { SOAPService } from "../services/soap-services";
 import { App } from "../app";
 
-interface UpdateRequest {
-    title: string;
-}
-
 interface IBookData {
     id: number;
     title: string;
@@ -21,6 +17,7 @@ interface IBookData {
     bookDesc: string;
     price: number;
     publicationDate: Date;
+    copiesSold: number;
     coverPath: string;
     audioPath: string;
 }
@@ -178,6 +175,7 @@ export class BookController {
                     bookDesc: book.bookDesc,
                     price: book.price,
                     publicationDate: new Date(book.publicationDate),
+                    copiesSold: book.copiesSold,
                     coverPath: book.coverPath,
                     audioPath: book.audioPath
                 });
@@ -251,6 +249,7 @@ export class BookController {
                 bookDesc: book.bookDesc,
                 price: book.price,
                 publicationDate: new Date(book.publicationDate),
+                copiesSold: book.copiesSold,
                 coverPath: book.coverPath,
                 audioPath: book.audioPath
             };
@@ -349,69 +348,6 @@ export class BookController {
             // Delete old file from storage
             fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'image', oldCoverPath));
             fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'audio', oldAudioPath));
-
-            res.status(StatusCodes.OK).json({
-                message: ReasonPhrases.OK,
-            });
-        };
-    }
-
-    // Update the title of a book.
-    updateTitle() {
-        return async (req: Request, res: Response) => {
-            const { token } = req as AuthRequest;
-            if (!token) {
-                // Endpoint can only be accessed by author
-                res.status(StatusCodes.UNAUTHORIZED).json({
-                    message: ReasonPhrases.UNAUTHORIZED,
-                });
-                return;
-            }
-
-            // Parse request body
-            const { title }: UpdateRequest = req.body;
-
-            // Parse request param
-            const bookID = parseInt(req.params.id);
-
-            const book = await App.prisma.book.findUnique({
-                where: {
-                    bookID: bookID
-                }
-            });
-
-            // If book is not found
-            if (!book) {
-                res.status(StatusCodes.NOT_FOUND).json({
-                    message: ReasonPhrases.NOT_FOUND,
-                });
-                return;
-            }
-
-            // Not the requester's book
-            if (book.authorID != token.userID) {
-                res.status(StatusCodes.UNAUTHORIZED).json({
-                    message: ReasonPhrases.UNAUTHORIZED,
-                });
-                return;
-            }
-
-            // Save the new book
-            const newBook = await App.prisma.book.update({
-                where: {
-                    bookID: bookID
-                },
-                data: {
-                    title: title
-                }
-            });
-
-            if (!newBook) {
-                res.status(StatusCodes.BAD_REQUEST).json({
-                    message: ReasonPhrases.BAD_REQUEST,
-                });
-                return;
-            }
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
@@ -583,6 +519,57 @@ export class BookController {
         }
     }
 
+    // Fetches user analytics: total subs, total books, copies sold, total revenue.
+    analytics() {
+        return async (req: Request, res: Response) => {
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
+            // Get the author ID
+            const authorID = token.userID;
+
+            // Fetch all books by author
+            const books = await App.prisma.book.findMany({
+                where: {
+                    authorID: authorID
+                }
+            });
+
+            // TODO: Fetch all subscriptions by author
+            
+            // Count total revenue
+            let bookRevenue = 0;
+            let subRevenue = 0;
+            for (const book of books) {
+                bookRevenue += book.price;
+
+                // TODO: Multiply by the number of copies sold
+            }
+
+            // TODO: Add the total revenue by subscription
+
+            // Construct expected data
+            const analyticsData = {
+                booksCreated: books.length,
+                totalSubs: 0,
+                copiesSold: 0,
+                bookRevenue: bookRevenue,
+                subRevenue: subRevenue
+            };
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+                data: analyticsData
+            });
+        }
+    }
+
     // < SOAP API >
     // Fetches all books by author.
     indexAuthor() {
@@ -634,6 +621,7 @@ export class BookController {
                     bookDesc: book.bookDesc,
                     price: book.price,
                     publicationDate: new Date(book.publicationDate),
+                    copiesSold: book.copiesSold,
                     coverPath: book.coverPath,
                     audioPath: book.audioPath
                 });
@@ -702,6 +690,7 @@ export class BookController {
                 bookDesc: book.bookDesc,
                 price: book.price,
                 publicationDate: new Date(book.publicationDate),
+                copiesSold: book.copiesSold,
                 coverPath: book.coverPath,
                 audioPath: book.audioPath
             };
@@ -712,4 +701,6 @@ export class BookController {
             });
         };
     }
+
+    // TODO: Method to buy a book (increment copies sold)
 }
