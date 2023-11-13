@@ -8,7 +8,6 @@ import {
     AuthToken,
     AuthRequest,
 } from "../middlewares/authentication-middleware";
-// import { cacheConfig } from "../config/cache-config";
 import { jwtConfig } from "../config/jwt-config";
 import { App } from "../app";
 
@@ -38,12 +37,12 @@ export class UserController {
 
             const user = await App.prisma.user.findUnique({
                 where: {
-                    username: username
+                    username: username.toLowerCase(),
                 },
                 select: {
                     userID: true,
-                    password: true
-                }
+                    password: true,
+                },
             });
             
             if (!user) {
@@ -89,7 +88,7 @@ export class UserController {
 
             const existingUserWithUsername = await App.prisma.user.findUnique({
                 where: {
-                    username: username
+                    username: username.toLowerCase()
                 }
             });
             if (existingUserWithUsername) {
@@ -116,7 +115,7 @@ export class UserController {
             const newUser = await App.prisma.user.create({
                 data: {
                     email: email,
-                    username: username,
+                    username: username.toLowerCase(),
                     name: name,
                     password: hashedPassword
                 }
@@ -179,7 +178,7 @@ export class UserController {
 
             const existingUserWithUsername = await App.prisma.user.findUnique({
                 where: {
-                    username: username
+                    username: username.toLowerCase()
                 }
             });
             if (existingUserWithUsername && existingUserWithUsername.userID !== token.userID) {
@@ -209,7 +208,7 @@ export class UserController {
                 },
                 data: {
                     email: email,
-                    username: username,
+                    username: username.toLowerCase(),
                     name: name,
                     password: hashedPassword
                 }

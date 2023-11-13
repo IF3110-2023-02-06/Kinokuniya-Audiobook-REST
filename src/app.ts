@@ -24,7 +24,7 @@ export class App {
         this.server.use((cors as (options: cors.CorsOptions) => express.RequestHandler)({}));
         this.server.use(
             "/api",
-            express.json(),
+            express.json({ limit: "50mb" }),
             express.urlencoded({ extended: true }),
             express.static('src/uploads'),
             morgan("combined"),

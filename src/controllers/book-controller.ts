@@ -109,8 +109,6 @@ export class BookController {
             let series = (req.query?.series || "") as string;
             series = series.toLowerCase();
 
-            console.log("Series: ", series);
-
             // Get page query
             const page = parseInt((req.query?.page || "1") as string);
             const pageSize = parseInt((req.query?.pageSize || "5") as string);
@@ -130,8 +128,6 @@ export class BookController {
                     contains: "",
                 },
             };
-
-            console.log("Filter:", seriesFilter);
 
             // Fetch all books by requester.
             const books = await App.prisma.book.findMany({
@@ -528,6 +524,10 @@ export class BookController {
 
             res.status(StatusCodes.CREATED).json({
                 message: ReasonPhrases.CREATED,
+                data: {
+                    seriesID: newSeries.seriesID,
+                    seriesName: newSeries.seriesName
+                }
             });
         };
     }
@@ -558,10 +558,18 @@ export class BookController {
                 }
             });
 
+            // Get the query param for seriesName
+            const seriesName = (req.query?.seriesName || "" ) as string;
+
             // Construct expected data
             const seriesData: ISeriesData[] = [];
 
             for (const s of series) {
+                // If seriesName is not empty, filter by seriesName
+                if (seriesName !== "" && s.seriesName.toLowerCase() !== seriesName.toLowerCase()) {
+                    continue;
+                }
+
                 seriesData.push({
                     seriesID: s.seriesID,
                     seriesName: s.seriesName
