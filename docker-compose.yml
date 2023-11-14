@@ -9,13 +9,10 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    depends_on:
-      - postgresql
-      - redis
-    networks:
-      - api-postgresql-redis
+    # depends_on:
+    #   - postgresql
   postgresql:
-    image: postgres:latest
+    image: postgres:latest  
     ports:
       - 5433:5432
     hostname: db-kino-rest-service
@@ -25,18 +22,3 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgresql:/docker-entrypoint-initdb.d/:ro
-    networks:
-      - api-postgresql-redis
-  redis:
-    image: redis:latest
-    restart: always
-    ports:
-      - 6380:6379
-    hostname: cache-kino-rest-service
-    volumes:
-      - ./redis:/data
-    networks:
-      - api-postgresql-redis
-networks:
-  api-postgresql-redis:
-    driver: bridge

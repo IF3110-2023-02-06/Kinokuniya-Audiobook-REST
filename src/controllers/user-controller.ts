@@ -231,8 +231,6 @@ export class UserController {
     index() {
         return async (req: Request, res: Response) => {
 
-            console.log(req);
-
             const { token } = req as AuthRequest;
             if (!token) {
                 // Endpoint can only be accessed by author
@@ -251,6 +249,24 @@ export class UserController {
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
                 data: user
+            });
+        };
+    }
+
+    // Fetches all users id, name, and username.
+    authors() {
+        return async (req: Request, res: Response) => {
+            const users = await App.prisma.user.findMany({
+                select: {
+                    userID: true,
+                    name: true,
+                    username: true
+                }
+            });
+
+            res.status(StatusCodes.OK).json({
+                message: ReasonPhrases.OK,
+                data: users
             });
         };
     }

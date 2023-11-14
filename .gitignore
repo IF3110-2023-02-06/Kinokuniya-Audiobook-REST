@@ -108,6 +108,5 @@ dist
 
 # Docker
 # postgresql/
-redis/
 
 src/uploads/**

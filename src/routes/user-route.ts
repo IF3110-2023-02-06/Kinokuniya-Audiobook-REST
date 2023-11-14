@@ -31,5 +31,9 @@ export class UserRoute {
                 this.authenticationMiddleware.authenticate(),
                 this.userController.update()
             )
+            .get(
+                "/authors",
+                this.userController.authors()
+            )
     }
 }
