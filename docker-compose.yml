@@ -1,7 +1,7 @@
 version: '3'
 services:
   rest-api:
-    build: .
+    image: kino-rest:latest
     ports:
       - 3000:3000
     hostname: api-kino-rest-service
@@ -9,8 +9,8 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    # depends_on:
-    #   - postgresql
+    networks:
+      - kinokuniya-network
   postgresql:
     image: postgres:latest  
     ports:
@@ -22,3 +22,5 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgresql:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - kinokuniya-network

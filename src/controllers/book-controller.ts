@@ -106,10 +106,6 @@ export class BookController {
             let series = (req.query?.series || "") as string;
             series = series.toLowerCase();
 
-            // Get page query
-            const page = parseInt((req.query?.page || "1") as string);
-            const pageSize = parseInt((req.query?.pageSize || "5") as string);
-
             // Define the series filter
             const seriesFilter: Prisma.seriesWhereInput =
             series !== 'all series'
@@ -135,9 +131,7 @@ export class BookController {
                         contains: title
                     },
                     series: seriesFilter // Include the series filter conditionally
-                },
-                skip: (page - 1) * pageSize,
-                take: pageSize
+                }
             });
 
             const length = await App.prisma.book.count({
@@ -145,11 +139,6 @@ export class BookController {
                     authorID: token.userID
                 }
             });
-
-            let totalPage = Math.ceil(length / pageSize);
-            if (totalPage === 0) {
-                totalPage = 1;
-            }
 
             // Construct expected data
             const booksData: IBookData[] = [];
@@ -183,8 +172,7 @@ export class BookController {
 
             res.status(StatusCodes.OK).json({
                 message: ReasonPhrases.OK,
-                data: booksData,
-                totalPage: totalPage
+                data: booksData
             });
         };
     }
@@ -574,7 +562,6 @@ export class BookController {
     // Fetches all books by author.
     indexAuthor() {
         return async (req: Request, res: Response) => {
-            // Get page query
             const { authorID } = req.params;
             const creatorID = parseInt(authorID);
             const subscriberID = parseInt(req.query.subscriber_id as string);

@@ -38,7 +38,7 @@ export class SoapController {
                     `http://${soapConfig.host}:${soapConfig.port}/api/subscribe`,
                     `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
                         <Body>
-                            <approveSubscribe xmlns="http://service.binotify/">
+                            <approveSubscribe xmlns="http://services.kinokuniya/">
                                 <arg0 xmlns="">${creatorID}</arg0>
                                 <arg1 xmlns="">${subscriberID}</arg1>
                                 <arg2 xmlns="">${soapConfig.key}</arg2>
@@ -101,7 +101,7 @@ export class SoapController {
                     `http://${soapConfig.host}:${soapConfig.port}/api/subscribe`,
                     `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
                         <Body>
-                            <rejectSubscribe xmlns="http://service.binotify/">
+                            <rejectSubscribe xmlns="http://services.kinokuniya/">
                                 <arg0 xmlns="">${creatorID}</arg0>
                                 <arg1 xmlns="">${subscriberID}</arg1>
                                 <arg2 xmlns="">${soapConfig.key}</arg2>
@@ -156,17 +156,13 @@ export class SoapController {
                 return;
             }
 
-            const page = parseInt((req.query?.page || "1") as string);
-            const pageSize = parseInt((req.query?.pageSize || "5") as string);
             let subscriptionData: SubscriptionData[] = [];
             try {
                 const response = await axios.post<string>(
                     `http://${soapConfig.host}:${soapConfig.port}/api/subscribe`,
                     `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
                         <Body>
-                            <getAllReqSubscribe xmlns="http://service.binotify/">
-                                <arg0 xmlns="">${page}</arg0>
-                                <arg1 xmlns="">${pageSize}</arg1>
+                            <getAllReqSubscribe xmlns="http://services.kinokuniya/">
                                 <arg2 xmlns="">${soapConfig.key}</arg2>
                             </getAllReqSubscribe>
                         </Body>
@@ -178,28 +174,16 @@ export class SoapController {
                     }
                 );
                 const xml = await xml2js.parseStringPromise(response.data);
-                const pageCount =
-                    xml["S:Envelope"]["S:Body"][0][
-                        "ns2:getAllReqSubscribeResponse"
-                    ][0].return[0].pageCount[0];
-                if (pageCount === "0") {
-                    res.status(StatusCodes.OK).json({
-                        message: "No subscription request found",
-                        data: subscriptionData,
-                        pageCount: pageCount,
-                    });
-                    return;
-                }
+
                 const results =
                     xml["S:Envelope"]["S:Body"][0][
                         "ns2:getAllReqSubscribeResponse"
-                    ][0].return[0].data;
+                    ][0].return[0];
 
                 if (!results) {
                     res.status(StatusCodes.OK).json({
                         message: ReasonPhrases.OK,
-                        data: [],
-                        totalPage: pageCount,
+                        data: []
                     });
                     return;
                 }
@@ -215,8 +199,7 @@ export class SoapController {
 
                 res.status(StatusCodes.OK).json({
                     message: ReasonPhrases.OK,
-                    data: subscriptionData,
-                    totalPage: pageCount,
+                    data: subscriptionData
                 });
                 return;
             } catch (error) {
