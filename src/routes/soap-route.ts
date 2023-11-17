@@ -30,7 +30,7 @@ export class SoapRoute {
             )
             .get(
                 "/subscribe/subscribers",
-                this.authenticationMiddleware.authenticate(),
+                this.authenticationMiddleware.authenticate(),   
                 this.soapController.subscribers()
             )
     }
