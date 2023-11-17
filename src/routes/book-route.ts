@@ -56,7 +56,6 @@ export class BookRoute {
             .post(
                 "/series",
                 this.authenticationMiddleware.authenticate(),
-                this.uploadMiddleware.uploadCover(),
                 this.bookController.storeSeries()
             )
             .get(
