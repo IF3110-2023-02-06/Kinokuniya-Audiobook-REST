@@ -156,15 +156,87 @@ export class SoapController {
                 return;
             }
 
+            
+            let subscriptionData: SubscriptionData[] = [];
+            try {
+                console.log("Index is called");
+                const response = await axios.post<string>(
+                    `http://${soapConfig.host}:${soapConfig.port}/api/subscribe`,
+                    `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+                        <Body>
+                            <getAllReqSubscribe xmlns="http://services.kinokuniya/">
+                                <arg1 xmlns="">${token.userID}</arg1>
+                                <arg2 xmlns="">${soapConfig.key}</arg2>
+                            </getAllReqSubscribe>
+                        </Body>
+                    </Envelope>`,
+                    {
+                        headers: {
+                            "Content-Type": "text/xml",
+                        },
+                    }
+                );
+
+                const xml = await xml2js.parseStringPromise(response.data);
+                
+                const results =
+                xml["S:Envelope"]["S:Body"][0][
+                    "ns2:getAllReqSubscribeResponse"
+                ][0].return[0].data;
+                
+                if (!results) {
+                    res.status(StatusCodes.OK).json({
+                        message: ReasonPhrases.OK,
+                        data: []
+                    });
+                    return;
+                }
+
+                results.forEach((result: any) => {
+                    subscriptionData.push({
+                        creatorID: result.creatorID[0],
+                        subscriberID: result.subscriberID[0],
+                        creatorName: result.creatorName[0],
+                        subscriberName: result.subscriberName[0],
+                    });
+                });
+
+                res.status(StatusCodes.OK).json({
+                    message: ReasonPhrases.OK,
+                    data: subscriptionData
+                });
+                return;
+            } catch (error) {
+                console.log(error);
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+                });
+                return;
+            }
+        };
+    }
+
+    subscribers() {
+        return async (req: Request, res: Response) => {
+            const { token } = req as AuthRequest;
+            if (!token) {
+                // Endpoint can only be accessed by author
+                res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: ReasonPhrases.UNAUTHORIZED,
+                });
+                return;
+            }
+
             let subscriptionData: SubscriptionData[] = [];
             try {
                 const response = await axios.post<string>(
                     `http://${soapConfig.host}:${soapConfig.port}/api/subscribe`,
                     `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
                         <Body>
-                            <getAllReqSubscribe xmlns="http://services.kinokuniya/">
+                            <getAllSubscribers xmlns="http://services.kinokuniya/">
+                                <arg1 xmlns="">${token.userID}</arg1>
                                 <arg2 xmlns="">${soapConfig.key}</arg2>
-                            </getAllReqSubscribe>
+                            </getAllSubscribers>
                         </Body>
                     </Envelope>`,
                     {
@@ -177,7 +249,7 @@ export class SoapController {
 
                 const results =
                     xml["S:Envelope"]["S:Body"][0][
-                        "ns2:getAllReqSubscribeResponse"
+                        "ns2:getAllSubscriberResponse"
                     ][0].return[0];
 
                 if (!results) {

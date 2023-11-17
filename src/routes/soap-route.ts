@@ -28,5 +28,10 @@ export class SoapRoute {
                 this.authenticationMiddleware.authenticate(),
                 this.soapController.index()
             )
+            .get(
+                "/subscribe/subscribers",
+                this.authenticationMiddleware.authenticate(),
+                this.soapController.subscribers()
+            )
     }
 }
