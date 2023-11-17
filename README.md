@@ -2,6 +2,11 @@
 
 This repository is intended to be a REST service for the Kinokuniya Audiobook Website created with Express.ts, Prisma ORM, and PostgreSQL. This service mainly handles the CRUD operations for the books and series, along with communicating with the SOAP service to get subscriber data.
 
+## Installation
+1. Clone the repository
+2. Build docker image using command located at `/script/init.sh`
+3. Go to the config repository and run the command `docker-compose up -d`
+
 ## Database
 ![Database](./screenshots/rest-database.png)
 
